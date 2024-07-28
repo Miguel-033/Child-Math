@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Practice</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f4f4f4;
+      }
+      #app {
+        text-align: center;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        width: 90%;
+      }
+      h1 {
+        font-size: 2em;
+        margin-bottom: 20px;
+      }
+      #question {
+        font-size: 1.5em;
+        margin-bottom: 25px;
+      }
+      .text-task {
+        padding-bottom: 25px;
+      }
+      input[type="text"] {
+        font-size: 1.2em;
+        padding: 10px;
+        width: 80%;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      button {
+        font-size: 1.2em;
+        padding: 10px 20px;
+        margin: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #4caf50;
+        color: white;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
+      #results {
+        font-size: 1.2em;
+        margin-top: 20px;
+      }
+      .incorrect {
+        color: red;
+      }
+      .hidden {
+        display: none;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        text-align: left;
+        border-radius: 10px;
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      #rewards-button {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        padding: 10px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+      }
+      #rewards-list li {
+        margin: 10px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      #rewards-list button {
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>Math Practice</h1>
+      <div id="question"></div>
+      <input type="text" id="answer" placeholder="Your answer" />
+      <button onclick="checkAnswer()">Submit</button>
+      <div id="results"></div>
+      <button id="restart-button" class="hidden" onclick="restart()">
+        Restart
+      </button>
+    </div>
+
+    <button id="rewards-button" onclick="openRewards()">
+      Посмотреть результаты
+    </button>
+
+    <div id="rewardsModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeRewards()">&times;</span>
+        <h2>Результаты</h2>
+        <p>Количество баллов: <span id="current-points">0</span></p>
+        <ul id="rewards-list"></ul>
+      </div>
+    </div>
+
+    <!-- scripts -->
+    <script src="script.js"></script>
+  </body>
+</html>
