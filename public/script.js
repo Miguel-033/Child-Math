@@ -6,23 +6,29 @@ let textTasks = [];
 let totalPoints = 0;
 let redeemedRewards = []; // Хранение информации о полученных наградах
 
-const botToken = "6336840308:AAFyOLTbq6eimWOyCStkqtPXCLJHGoFcrb4";
-const chatId = "5895553185";
+const botToken = "YOUR_BOT_TOKEN";
+const chatId = "YOUR_CHAT_ID";
 
-// Загрузка баллов из базы данных
-fetch("/points")
-  .then((response) => response.json())
-  .then((data) => {
-    totalPoints = data.points;
+// Загрузка баллов из Local Storage
+function loadPoints() {
+  const storedPoints = localStorage.getItem("totalPoints");
+  if (storedPoints !== null) {
+    totalPoints = parseInt(storedPoints, 10);
     document.getElementById("current-points").innerText = totalPoints;
-    displayRewards(); // Отображаем награды после загрузки баллов
-  });
+  }
+}
+
+function savePoints(points) {
+  localStorage.setItem("totalPoints", points);
+}
+
+loadPoints();
 
 const rewards = [
-  { name: "Наклейки", points: 50 },
-  { name: "Время на просмотр любимых мультфильмов (1- час)", points: 13 },
-  { name: "Специальные мероприятия", points: 55 },
-  { name: "Деньги  1- евро", points: 90 },
+  { name: "Киндер", points: 30 },
+  { name: "Время на просмотр любимых мультфильмов (40 мин)", points: 20 },
+  { name: "Прогулка на велосипеде 1 час", points: 30 },
+  { name: "Деньги 1- евро", points: 20 },
 ];
 
 fetch("tasks.json")
@@ -42,9 +48,15 @@ function getRandomItems(array, numItems) {
 
 function generateQuestions() {
   for (let i = 0; i < 10; i++) {
-    const num1 = Math.floor(Math.random() * 16);
-    const num2 = Math.floor(Math.random() * 16);
-    const isAddition = Math.random() > 0.5;
+    let num1 = Math.floor(Math.random() * 16);
+    let num2 = Math.floor(Math.random() * 16);
+    let isAddition = Math.random() > 0.5;
+
+    // Убедимся, что результат всегда положительный
+    if (!isAddition && num1 < num2) {
+      [num1, num2] = [num2, num1]; // Меняем местами
+    }
+
     const question = {
       num1: num1,
       num2: num2,
@@ -100,8 +112,11 @@ function showExtraTasks(taskIndex) {
             <div class="text-task">
                 <strong>Прочитайте следующий текст и ответьте на вопрос.</strong>
                 <div style="padding-bottom: 25px;">
+                    <em>Текст:</em><br>
                     ${text}
                 </div>
+                <em>Вопрос:</em><br>
+                ${question}
             </div>`;
     document.querySelector("button").onclick = function () {
       checkExtraTaskAnswer(taskIndex);
@@ -171,7 +186,7 @@ function checkTextTaskAnswer(taskIndex) {
 
 function showFinalResults() {
   let resultsDiv = document.getElementById("results");
-  resultsDiv.innerHTML = "<h2>Результаты</h2>";
+  resultsDiv.innerHTML = "<h2>Results</h2>";
   results.forEach((result) => {
     let resultElement = document.createElement("div");
     resultElement.innerText = `${result.question} = ${result.userAnswer}`;
@@ -223,16 +238,6 @@ function sendResultsToTelegram() {
   });
 }
 
-function savePoints(points) {
-  fetch("/points", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ points }),
-  });
-}
-
 function updatePointsDisplay() {
   document.getElementById("current-points").innerText = totalPoints;
   savePoints(totalPoints);
@@ -272,7 +277,7 @@ function redeemReward(reward) {
   if (totalPoints >= reward.points) {
     totalPoints -= reward.points;
     updatePointsDisplay();
-    redeemedRewards.push(reward); // Добавляем информацию о награде пользователя
+    redeemedRewards.push(reward); // Добавляем информацию о награде
     alert(`You have redeemed ${reward.name}!`);
     displayRewards(); // Обновляем отображение наград после обмена
     sendResultsToTelegram(); // Отправляем обновленные результаты в Telegram
