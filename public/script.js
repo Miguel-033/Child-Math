@@ -16,9 +16,9 @@ fetch("/points")
   });
 
 const rewards = [
-  { name: "Киндер", points: 35 },
-  { name: "Время на просмотр любимых мультфильмов (40 мин)", points: 13 },
-  { name: "Специальные мероприятия", points: 45 },
+  { name: "Rbylth", points: 35 },
+  { name: "Время на просмотр любимых мультфильмов (1 час)", points: 13 },
+  { name: "Специальные мероприятия", points: 55 },
   { name: "Деньги 1 евро", points: 30 },
 ];
 
@@ -184,7 +184,7 @@ function showFinalResults() {
     results.filter((r) => r.isCorrect).length
   }</p>`;
   savePoints(totalPoints);
-  sendResultsToTelegram();
+  sendResultsToTelegram(); // Отправляем результаты в Telegram после их отображения
   document.getElementById("question").style.display = "none";
   document.getElementById("answer").style.display = "none";
   document.querySelector("button").style.display = "none";
@@ -192,8 +192,8 @@ function showFinalResults() {
 }
 
 function sendResultsToTelegram() {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const botToken = process.env.TELEGRAM_BOT_TOKEN || "ваш_токен_бота";
+  const chatId = process.env.TELEGRAM_CHAT_ID || "ваш_chat_id";
 
   let message = `Math Practice Results:\n\nTotal Points: ${totalPoints}\n\n`;
   results.forEach((result) => {
