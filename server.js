@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const sqlite3 = require("sqlite3").verbose();
@@ -40,7 +41,7 @@ app.get("/points", (req, res) => {
   });
 });
 
-// Сохранение новых баллов пользователя
+// Сохранение новых баллов
 app.post("/points", (req, res) => {
   const { points } = req.body;
   db.run("UPDATE points SET value = ? WHERE id = 1", [points], function (err) {

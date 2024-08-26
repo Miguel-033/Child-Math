@@ -6,36 +6,27 @@ let textTasks = [];
 let totalPoints = 0;
 let redeemedRewards = []; // Хранение информации о полученных наградах
 
-const botToken = "YOUR_BOT_TOKEN";
-const chatId = "YOUR_CHAT_ID";
-
-// Загрузка баллов из Local Storage
-function loadPoints() {
-  const storedPoints = localStorage.getItem("totalPoints");
-  if (storedPoints !== null) {
-    totalPoints = parseInt(storedPoints, 10);
+// Загрузка баллов из базы данных
+fetch("/points")
+  .then((response) => response.json())
+  .then((data) => {
+    totalPoints = data.points;
     document.getElementById("current-points").innerText = totalPoints;
-  }
-}
-
-function savePoints(points) {
-  localStorage.setItem("totalPoints", points);
-}
-
-loadPoints();
+    displayRewards(); // Отображаем награды после загрузки баллов
+  });
 
 const rewards = [
-  { name: "Киндер", points: 30 },
-  { name: "Время на просмотр любимых мультфильмов (40 мин)", points: 20 },
-  { name: "Прогулка на велосипеде 1 час", points: 30 },
-  { name: "Деньги 1- евро", points: 20 },
+  { name: "Киндер", points: 35 },
+  { name: "Время на просмотр любимых мультфильмов (40 мин)", points: 13 },
+  { name: "Специальные мероприятия", points: 45 },
+  { name: "Деньги 1 евро", points: 30 },
 ];
 
 fetch("tasks.json")
   .then((response) => response.json())
   .then((data) => {
-    extraTasks = getRandomItems(data.extraTasks, 4); // Берем 4 случайные задачи
-    textTasks = getRandomItems(data.textTasks, 2); // Берем 2 случайные текстовые задачи
+    extraTasks = getRandomItems(data.extraTasks, 2); // Берем 2 случайные задачи
+    textTasks = getRandomItems(data.textTasks, 1); // Берем 1 случайные текстовые задачи
     generateQuestions();
     showQuestion();
   })
@@ -48,20 +39,14 @@ function getRandomItems(array, numItems) {
 
 function generateQuestions() {
   for (let i = 0; i < 10; i++) {
-    let num1 = Math.floor(Math.random() * 16);
-    let num2 = Math.floor(Math.random() * 16);
-    let isAddition = Math.random() > 0.5;
-
-    // Убедимся, что результат всегда положительный
-    if (!isAddition && num1 < num2) {
-      [num1, num2] = [num2, num1]; // Меняем местами
-    }
-
+    const num1 = Math.floor(Math.random() * 16);
+    const num2 = Math.floor(Math.random() * 16);
+    const isAddition = Math.random() > 0.5;
     const question = {
-      num1: num1,
-      num2: num2,
+      num1: isAddition || num1 >= num2 ? num1 : num2, // Убедиться, что при вычитании num1 >= num2
+      num2: isAddition || num1 >= num2 ? num2 : num1,
       isAddition: isAddition,
-      answer: isAddition ? num1 + num2 : num1 - num2,
+      answer: isAddition ? num1 + num2 : Math.abs(num1 - num2),
     };
     questions.push(question);
   }
@@ -92,7 +77,7 @@ function checkAnswer() {
   };
   results.push(result);
   if (result.isCorrect) {
-    totalPoints += 1; // Один правильный ответ - один балл
+    totalPoints += 1; // Один правильный ответ на пример - один балл
     updatePointsDisplay();
   }
   currentQuestion++;
@@ -112,11 +97,8 @@ function showExtraTasks(taskIndex) {
             <div class="text-task">
                 <strong>Прочитайте следующий текст и ответьте на вопрос.</strong>
                 <div style="padding-bottom: 25px;">
-                    <em>Текст:</em><br>
                     ${text}
                 </div>
-                <em>Вопрос:</em><br>
-                ${question}
             </div>`;
     document.querySelector("button").onclick = function () {
       checkExtraTaskAnswer(taskIndex);
@@ -137,7 +119,7 @@ function checkExtraTaskAnswer(taskIndex) {
   };
   results.push(result);
   if (result.isCorrect) {
-    totalPoints += 1; // Один правильный ответ - один балл
+    totalPoints += 2; // Один правильный ответ на простую задачу - два балла
     updatePointsDisplay();
   }
   document.getElementById("answer").value = "";
@@ -177,7 +159,7 @@ function checkTextTaskAnswer(taskIndex) {
   };
   results.push(result);
   if (result.isCorrect) {
-    totalPoints += 1; // Один правильный ответ - один балл
+    totalPoints += 3; // Один правильный ответ на сложную задачу - три балла
     updatePointsDisplay();
   }
   document.getElementById("answer").value = "";
@@ -186,7 +168,7 @@ function checkTextTaskAnswer(taskIndex) {
 
 function showFinalResults() {
   let resultsDiv = document.getElementById("results");
-  resultsDiv.innerHTML = "<h2>Results</h2>";
+  resultsDiv.innerHTML = "<h2>Результаты</h2>";
   results.forEach((result) => {
     let resultElement = document.createElement("div");
     resultElement.innerText = `${result.question} = ${result.userAnswer}`;
@@ -210,6 +192,9 @@ function showFinalResults() {
 }
 
 function sendResultsToTelegram() {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+
   let message = `Math Practice Results:\n\nTotal Points: ${totalPoints}\n\n`;
   results.forEach((result) => {
     message += `${result.question} = ${result.userAnswer}`;
@@ -235,6 +220,16 @@ function sendResultsToTelegram() {
     } else {
       console.error("Error sending results to Telegram");
     }
+  });
+}
+
+function savePoints(points) {
+  fetch("/points", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ points }),
   });
 }
 
